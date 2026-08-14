@@ -1,0 +1,72 @@
+{
+  "info": {
+    "name": "Apple Sign In Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Apple Sign In",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider\": \"apple\",\n  \"identityToken\": \"eyJraWQiOiJlWGF1bm1ZT1dZR0JZIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLnlvdXJhcHAuYnVuZGxlaWQiLCJleHAiOjE3MDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwic3ViIjoiMDAxMjM0LjEyMzQ1Njc4OWFiY2RlZi4xMjM0IiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImlzX3ByaXZhdGVfZW1haWwiOmZhbHNlLCJhdXRoX3RpbWUiOjE3MDAwMDAwMDAsIm5vbmNlX3N1cHBvcnRlZCI6dHJ1ZX0.example_signature\",\n  \"email\": \"user@example.com\",\n  \"fullName\": \"John Doe\",\n  \"role\": \"ARTIST\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/oauth/apple",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "oauth", "apple"]
+        },
+        "description": "Test Apple Sign In endpoint. Note: The identityToken is a JWT from Apple. In a real scenario, you would get this from the iOS app after Apple Sign In completes.\n\n**Important:**\n- Replace the identityToken with a real token from Apple Sign In\n- The email and fullName are optional but recommended\n- Role must be one of: ADMIN, ARTIST, PRODUCER, ENGINEER, JOURNALIST"
+      },
+      "response": []
+    },
+    {
+      "name": "Apple Sign In (No Email)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider\": \"apple\",\n  \"identityToken\": \"eyJraWQiOiJlWGF1bm1ZT1dZR0JZIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLnlvdXJhcHAuYnVuZGxlaWQiLCJleHAiOjE3MDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwic3ViIjoiMDAxMjM0LjEyMzQ1Njc4OWFiY2RlZi4xMjM0IiwiYXV0aF90aW1lIjoxNzAwMDAwMDAwfQ.example_signature\",\n  \"role\": \"ARTIST\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/oauth/apple",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "oauth", "apple"]
+        },
+        "description": "Test Apple Sign In when email is not provided (subsequent sign-ins). The backend will generate a placeholder email."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
+

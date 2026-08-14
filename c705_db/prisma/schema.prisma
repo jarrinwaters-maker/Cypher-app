@@ -1,0 +1,364 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  ARTIST
+  PRODUCER
+  ENGINEER
+  JOURNALIST
+}
+
+model User {
+  id            String         @id @default(uuid())
+  username      String?        @unique
+  email         String         @unique
+  password      String
+  role          Role
+  createdAt     DateTime       @default(now())
+  artistProfile ArtistProfile?
+  likedTracks  TrackLike[]
+  articles      Article[]
+  comments      Comment[]
+  following     Follow[]       @relation("Follower")
+  followers     Follow[]       @relation("Following")
+  cypherEntries CypherEntry[]
+  cypherVotes   CypherVote[]
+  cypherReports CypherReport[]
+  hostedCyphers Cypher[]     @relation("HostedCyphers")
+  cypherInvites CypherInvite[] @relation("CypherInvites")
+  sentCypherInvites CypherInvite[] @relation("SentCypherInvites")
+  beats         Beat[]
+  beatPurchases BeatPurchase[]
+  beatReports   BeatReport[]
+  subscription  Subscription?
+  payouts       ProducerPayout[]
+}
+
+model ArtistProfile {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  bio       String?
+  name      String?
+  city      String?
+  avatarUrl String?
+  instagramUrl String?
+  youtubeUrl   String?
+  xUrl         String?
+  tiktokUrl    String?
+  user      User    @relation(fields: [userId], references: [id])
+  tracks    Track[]
+  createdAt DateTime @default(now())
+}
+
+model Track {
+  id        String        @id @default(uuid())
+  title     String
+  audioUrl  String
+  artistId  String
+  artist    ArtistProfile @relation(fields: [artistId], references: [id])
+  createdAt DateTime      @default(now())
+  likes     TrackLike[]
+  likeCount Int           @default(0)
+  comments  Comment[]
+}
+
+model TrackLike {
+  id        String   @id @default(uuid())
+  userId    String
+  trackId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, trackId])
+  @@index([trackId])
+  @@index([userId])
+}
+
+model Article {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  city      String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  trackId   String?
+  track     Track?   @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([trackId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  follower    User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+enum CypherType {
+  OPEN
+  COMPETITIVE
+  BEAT_LOCKED
+}
+
+enum CypherVisibility {
+  PUBLIC
+  INVITE_ONLY
+}
+
+enum CypherStatus {
+  OPEN
+  CLOSED
+}
+
+model Cypher {
+  id            String          @id @default(uuid())
+  title         String
+  description   String?
+  beatUrl       String?
+  beatId        String?         // Optional: link to Beat model for beat-locked cyphers
+  hostArtistId  String          // User who created/hosts the cypher
+  host          User            @relation("HostedCyphers", fields: [hostArtistId], references: [id], onDelete: Cascade)
+  visibility    CypherVisibility @default(PUBLIC)
+  status        CypherStatus    @default(OPEN)
+  isActive      Boolean         @default(true)
+  cypherType    CypherType
+  startDate     DateTime
+  endDate       DateTime?
+  createdAt     DateTime        @default(now())
+  entries       CypherEntry[]
+  reports       CypherReport[]
+  invites       CypherInvite[]
+
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([cypherType])
+  @@index([hostArtistId])
+  @@index([visibility])
+  @@index([status])
+}
+
+model CypherInvite {
+  id                String   @id @default(uuid())
+  cypherId           String
+  cypher             Cypher   @relation(fields: [cypherId], references: [id], onDelete: Cascade)
+  invitedArtistId    String
+  invitedArtist      User     @relation("CypherInvites", fields: [invitedArtistId], references: [id], onDelete: Cascade)
+  invitedByArtistId  String
+  invitedBy          User     @relation("SentCypherInvites", fields: [invitedByArtistId], references: [id], onDelete: Cascade)
+  status             String   @default("pending") // pending, accepted, declined
+  createdAt          DateTime @default(now())
+  respondedAt        DateTime?
+
+  @@unique([cypherId, invitedArtistId])
+  @@index([cypherId])
+  @@index([invitedArtistId])
+  @@index([invitedByArtistId])
+  @@index([status])
+}
+
+model CypherEntry {
+  id          String       @id @default(uuid())
+  cypherId    String
+  cypher      Cypher       @relation(fields: [cypherId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audioUrl    String
+  title       String?
+  createdAt   DateTime     @default(now())
+  votes       CypherVote[]
+  reports     CypherReport[]
+  averageScore Float?      @default(0)
+  voteCount   Int          @default(0)
+
+  @@unique([cypherId, userId])
+  @@index([cypherId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([averageScore])
+}
+
+model CypherVote {
+  id        String      @id @default(uuid())
+  entryId   String
+  entry     CypherEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int         // 1-5 rating
+  createdAt DateTime    @default(now())
+
+  @@unique([entryId, userId])
+  @@index([entryId])
+  @@index([userId])
+}
+
+model CypherReport {
+  id        String      @id @default(uuid())
+  entryId   String?
+  entry     CypherEntry? @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  cypherId  String?
+  cypher    Cypher?     @relation(fields: [cypherId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason    String
+  status    String      @default("pending") // pending, reviewed, resolved
+  createdAt DateTime    @default(now())
+
+  @@index([entryId])
+  @@index([cypherId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Beat models for producer marketplace
+model Beat {
+  id          String         @id @default(uuid())
+  title       String
+  genre       String
+  bpm         Int
+  mood        String?
+  previewUrl  String         // 20-30 second preview
+  fullUrl     String         // Full beat (locked behind purchase)
+  price       Int            // Price in cents (Apple requirement)
+  producerId  String
+  producer    User           @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+  purchases   BeatPurchase[]
+  reports     BeatReport[]
+
+  @@index([producerId])
+  @@index([genre])
+  @@index([bpm])
+  @@index([createdAt])
+}
+
+model BeatPurchase {
+  id            String   @id @default(uuid())
+  beatId        String
+  beat          Beat     @relation(fields: [beatId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  receipt       String   // Apple IAP receipt for validation
+  grossAmount   Int      // Total amount paid (in cents)
+  appleFee      Int      // Apple's 30% cut (in cents)
+  platformFee   Int      // C705's 30% cut (in cents)
+  producerEarning Int    // Producer's 70% cut (in cents)
+  payoutStatus  String   @default("pending") // pending, paid, processing
+  createdAt     DateTime @default(now())
+
+  @@unique([beatId, userId])
+  @@index([beatId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([payoutStatus])
+}
+
+model BeatReport {
+  id        String   @id @default(uuid())
+  beatId    String
+  beat      Beat     @relation(fields: [beatId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason    String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  @@index([beatId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Subscription models for recurring revenue
+enum SubscriptionTier {
+  FREE
+  CREATOR_PLUS
+  PRO_CREATOR
+}
+
+model Subscription {
+  id              String            @id @default(uuid())
+  userId          String            @unique
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            SubscriptionTier   @default(FREE)
+  productId       String?           // Apple IAP product ID
+  receipt         String?           // Apple receipt for validation
+  expiresAt       DateTime?         // Null for active subscriptions
+  autoRenew        Boolean          @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([tier])
+  @@index([expiresAt])
+}
+
+// Producer payout tracking
+model ProducerPayout {
+  id              String   @id @default(uuid())
+  producerId      String
+  producer        User     @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  totalAmount     Int      // Total earnings in cents
+  platformFee     Int      // Platform fee deducted
+  netAmount       Int      // Amount paid to producer
+  status          String   @default("pending") // pending, processing, paid, failed
+  paymentMethod   String?  // Stripe, PayPal, etc.
+  transactionId   String?  // External payment transaction ID
+  processedAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([producerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Journalist invite codes - Only admins can create these
+model JournalistInvite {
+  id          String    @id @default(uuid())
+  email       String?   // Optional: can be tied to specific email
+  accessCode  String    @unique // Unique access code
+  used        Boolean   @default(false) // Whether the code has been used
+  expiresAt   DateTime? // Optional expiration date
+  createdBy   String    // Admin user ID who created this invite
+  createdAt   DateTime  @default(now())
+  usedAt      DateTime? // When the code was used
+  usedBy      String?   // User ID who used the code
+
+  @@index([accessCode])
+  @@index([used])
+  @@index([expiresAt])
+  @@index([createdBy])
+}

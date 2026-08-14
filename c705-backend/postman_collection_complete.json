@@ -1,0 +1,875 @@
+{
+  "info": {
+    "name": "C705 API - Complete Collection",
+    "description": "Complete API collection for testing all C705 backend endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL for the API. Default: http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token (automatically saved after login/signup)"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "User ID (automatically saved after login/signup)"
+    },
+    {
+      "key": "trackId",
+      "value": "",
+      "type": "string",
+      "description": "Track ID (automatically saved after upload)"
+    },
+    {
+      "key": "artistId",
+      "value": "",
+      "type": "string",
+      "description": "Artist ID (set manually or from user response)"
+    },
+    {
+      "key": "commentId",
+      "value": "",
+      "type": "string",
+      "description": "Comment ID (set manually)"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the server is running and healthy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('userId', jsonData.user.id);",
+                  "    pm.collectionVariables.set('artistId', jsonData.user.id);",
+                  "    console.log('✅ Token saved:', jsonData.access_token);",
+                  "    console.log('✅ User ID saved:', jsonData.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"artist@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"ARTIST\",\n  \"username\": \"TestArtist\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Sign up a new user. Token and User ID will be automatically saved.\n\nRoles: ARTIST, PRODUCER, ENGINEER, JOURNALIST, ADMIN"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('userId', jsonData.user.id);",
+                  "    pm.collectionVariables.set('artistId', jsonData.user.id);",
+                  "    console.log('✅ Token saved:', jsonData.access_token);",
+                  "    console.log('✅ User ID saved:', jsonData.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"artist@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with email and password. Token and User ID will be automatically saved."
+          }
+        },
+        {
+          "name": "OAuth - Apple Sign In",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"apple\",\n  \"identityToken\": \"test-token-here\",\n  \"email\": \"user@example.com\",\n  \"fullName\": \"John Doe\",\n  \"role\": \"ARTIST\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/oauth/apple",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "oauth", "apple"]
+            },
+            "description": "Sign in with Apple. Replace identityToken with actual Apple identity token."
+          }
+        },
+        {
+          "name": "OAuth - Google Sign In",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"google\",\n  \"identityToken\": \"test-token-here\",\n  \"email\": \"user@example.com\",\n  \"fullName\": \"John Doe\",\n  \"role\": \"ARTIST\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/oauth/google",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "oauth", "google"]
+            },
+            "description": "Sign in with Google. Replace identityToken with actual Google ID token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feed",
+      "item": [
+        {
+          "name": "Get Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/feed?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["feed"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get combined feed of tracks and articles sorted by date"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracks",
+      "item": [
+        {
+          "name": "Upload Track",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('trackId', jsonData.id);",
+                  "    console.log('✅ Track ID saved:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select an audio file (MP3, WAV, M4A, etc.)"
+                },
+                {
+                  "key": "title",
+                  "value": "My Test Song",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tracks/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "upload"]
+            },
+            "description": "Upload an audio track. Requires ARTIST or ADMIN role.\n\n⚠️ IMPORTANT: Change the 'file' field type from 'Text' to 'File' and select an audio file."
+          }
+        },
+        {
+          "name": "Get All Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks?page=1&limit=20&sortBy=recent",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "recent",
+                  "description": "Options: recent, popular, likes"
+                }
+              ]
+            },
+            "description": "Get all public tracks with pagination"
+          }
+        },
+        {
+          "name": "Get Track by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/{{trackId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "{{trackId}}"]
+            },
+            "description": "Get a specific track by ID. Uses saved trackId variable."
+          }
+        },
+        {
+          "name": "Get My Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/my-tracks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "my-tracks"]
+            },
+            "description": "Get all tracks uploaded by the authenticated user"
+          }
+        },
+        {
+          "name": "Get Liked Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/liked",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "liked"]
+            },
+            "description": "Get all tracks liked by the authenticated user"
+          }
+        },
+        {
+          "name": "Search Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/search?query=song&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "song"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search tracks by query, artist, etc."
+          }
+        },
+        {
+          "name": "Get Popular Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/popular?limit=20&timeRange=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "popular"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "timeRange",
+                  "value": "all",
+                  "description": "Options: day, week, month, all"
+                }
+              ]
+            },
+            "description": "Get popular/trending tracks"
+          }
+        },
+        {
+          "name": "Get Tracks by Artist",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/artist/{{artistId}}?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "artist", "{{artistId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all tracks by a specific artist"
+          }
+        },
+        {
+          "name": "Update Track",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Track Title\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tracks/{{trackId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "{{trackId}}"]
+            },
+            "description": "Update track metadata. Only track owner can update."
+          }
+        },
+        {
+          "name": "Delete Track",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/{{trackId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "{{trackId}}"]
+            },
+            "description": "Delete a track. Only track owner can delete. Removes from S3 and database."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Likes",
+      "item": [
+        {
+          "name": "Like Track",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trackId\": \"{{trackId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["like"]
+            },
+            "description": "Like a track. Uses saved trackId variable."
+          }
+        },
+        {
+          "name": "Like Track (Alternative)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/{{trackId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "{{trackId}}", "like"]
+            },
+            "description": "Alternative endpoint to like a track"
+          }
+        },
+        {
+          "name": "Unlike Track",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/{{trackId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "{{trackId}}", "like"]
+            },
+            "description": "Unlike a track. Uses saved trackId variable."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Get Track Comments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comment/track/{{trackId}}?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["comment", "track", "{{trackId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all comments for a specific track"
+          }
+        },
+        {
+          "name": "Create Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('commentId', jsonData.id);",
+                  "    console.log('✅ Comment ID saved:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Great track! Love it!\",\n  \"trackId\": \"{{trackId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comment",
+              "host": ["{{baseUrl}}"],
+              "path": ["comment"]
+            },
+            "description": "Create a comment on a track. Uses saved trackId variable."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Artists",
+      "item": [
+        {
+          "name": "Get Artist Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/artists/{{artistId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", "{{artistId}}"]
+            },
+            "description": "Get artist profile with followers count, tracks count, and follow status"
+          }
+        },
+        {
+          "name": "Get Artist Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/artists/{{artistId}}/tracks?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", "{{artistId}}", "tracks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all tracks by a specific artist"
+          }
+        },
+        {
+          "name": "Follow Artist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/artists/{{artistId}}/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", "{{artistId}}", "follow"]
+            },
+            "description": "Follow an artist"
+          }
+        },
+        {
+          "name": "Unfollow Artist",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/artists/{{artistId}}/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", "{{artistId}}", "follow"]
+            },
+            "description": "Unfollow an artist"
+          }
+        },
+        {
+          "name": "Get Artist Followers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/artists/{{artistId}}/followers?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", "{{artistId}}", "followers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all followers of an artist"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Articles",
+      "item": [
+        {
+          "name": "Get All Articles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all articles (read-only for iOS app)"
+          }
+        },
+        {
+          "name": "Get Article by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "article-id-here"
+                }
+              ]
+            },
+            "description": "Get a specific article by ID"
+          }
+        },
+        {
+          "name": "Search Articles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/search?query=keyword&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "keyword"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search articles by keyword, city, or author"
+          }
+        },
+        {
+          "name": "Get Articles by Author",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles/author/{{userId}}?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "author", "{{userId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all articles by a specific author"
+          }
+        }
+      ]
+    }
+  ]
+}
+

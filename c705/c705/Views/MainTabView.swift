@@ -1,0 +1,77 @@
+//
+//  MainTabView.swift
+//  c705
+//
+//  Created by Avery Harris on 12/22/25.
+//
+
+import SwiftUI
+
+struct MainTabView: View {
+    @State private var selectedTab = 0
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            // Home Tab
+            FeedView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
+                .tag(0)
+            
+            // Search Tab
+            UniversalSearchView()
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
+                .tag(1)
+            
+            // Cypher Tab
+            FreestyleArenaView()
+                .tabItem {
+                    Label("Cypher", systemImage: "mic.fill")
+                }
+                .tag(2)
+            
+            // Beats Tab
+            BeatsView()
+                .tabItem {
+                    Label("Beats", systemImage: "music.note")
+                }
+                .tag(3)
+        }
+        .accentColor(.blue)
+    }
+}
+
+// Artists tab view
+struct ArtistsView: View {
+    @EnvironmentObject var authService: AuthService
+    
+    var body: some View {
+        ArtistsListView()
+            .environmentObject(authService)
+    }
+}
+
+struct FreestyleArenaView: View {
+    @StateObject private var viewModel = CypherHubViewModel()
+    
+    var body: some View {
+        CypherHubView(viewModel: viewModel)
+    }
+}
+
+struct BeatsView: View {
+    @EnvironmentObject var authService: AuthService
+    
+    var body: some View {
+        BeatsHubView()
+            .environmentObject(authService)
+    }
+}
+
+#Preview {
+    MainTabView()
+}
+

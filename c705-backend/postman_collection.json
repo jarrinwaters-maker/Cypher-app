@@ -1,0 +1,308 @@
+{
+  "info": {
+    "name": "C705 API Collection",
+    "description": "API collection for testing C705 backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL for the API. Default: http://localhost:3000. Update if server runs on different port or environment."
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token (automatically saved after login/signup)"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "User ID (automatically saved after login/signup)"
+    },
+    {
+      "key": "trackId",
+      "value": "",
+      "type": "string",
+      "description": "Track ID (automatically saved after upload)"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('userId', jsonData.user.id);",
+                  "    console.log('Token saved:', jsonData.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"artist@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"ARTIST\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Sign up a new user. Token will be automatically saved."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('userId', jsonData.user.id);",
+                  "    console.log('Token saved:', jsonData.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"artist@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with email and password. Token will be automatically saved."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tracks",
+      "item": [
+        {
+          "name": "Upload Track",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('trackId', jsonData.id);",
+                  "    console.log('Track ID saved:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "title",
+                  "value": "My Test Song",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tracks/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "upload"]
+            },
+            "description": "Upload an audio file. Requires canUploadMusic permission (ARTIST, ADMIN).\n\nNote: Select an audio file in the 'file' field."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Feed (All Tracks)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks?page=1&limit=20&sortBy=recent",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "recent",
+                  "description": "Options: recent, popular, likes"
+                }
+              ]
+            },
+            "description": "Get all public tracks (feed). Returns paginated results."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/my-tracks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "my-tracks"]
+            },
+            "description": "Get all tracks uploaded by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Track by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/{{trackId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "{{trackId}}"]
+            },
+            "description": "Get a specific track by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/search?query=song&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "song"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search tracks by query, artist, etc."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Popular Tracks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/popular?limit=20&timeRange=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "popular"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "timeRange",
+                  "value": "all",
+                  "description": "Options: day, week, month, all"
+                }
+              ]
+            },
+            "description": "Get popular/trending tracks."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+
