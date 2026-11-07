@@ -892,6 +892,9 @@ struct SettingsView: View {
     @State private var showTwoFactor = false
     @State private var showBlockedUsers = false
     @State private var legalURL: URL?
+    // The Terms of Service and Community Guidelines pages are not live yet (c705.online returns
+    // 404), so those two rows are hidden. Set to true when the pages exist.
+    private let legalPagesLive = false
     
     var userRole: String {
         authService.currentUser?.role ?? ""
@@ -1596,10 +1599,12 @@ struct SettingsView: View {
                 // inside the app, and shows the app version.
                 // MARK: - Legal & App Info (All Users)
                 Section(header: Text("Legal & App Info")) {
-                    Button(action: {
-                        legalURL = URL(string: "https://c705.online/terms")
-                    }) {
-                        SettingsRow(icon: "doc.text", title: "Terms of Service", color: .black)
+                    if legalPagesLive {
+                        Button(action: {
+                            legalURL = URL(string: "https://c705.online/terms")
+                        }) {
+                            SettingsRow(icon: "doc.text", title: "Terms of Service", color: .black)
+                        }
                     }
 
                     Button(action: {
@@ -1610,10 +1615,12 @@ struct SettingsView: View {
                         SettingsRow(icon: "hand.raised.fill", title: "Privacy Policy", color: .black)
                     }
                     
-                    Button(action: {
-                        legalURL = URL(string: "https://c705.online/community-guidelines")
-                    }) {
-                        SettingsRow(icon: "book.fill", title: "Community Guidelines", color: .black)
+                    if legalPagesLive {
+                        Button(action: {
+                            legalURL = URL(string: "https://c705.online/community-guidelines")
+                        }) {
+                            SettingsRow(icon: "book.fill", title: "Community Guidelines", color: .black)
+                        }
                     }
                     
                     HStack {
