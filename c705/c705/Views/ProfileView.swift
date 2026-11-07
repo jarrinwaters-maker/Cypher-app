@@ -1603,7 +1603,9 @@ struct SettingsView: View {
                     }
 
                     Button(action: {
-                        legalURL = URL(string: "https://c705.online/privacy")
+                        // Temporary: c705.online/privacy is not live yet, so this opens the published
+                        // privacy policy. Switch back to https://c705.online/privacy when that page exists.
+                        legalURL = URL(string: "https://docs.google.com/document/d/e/2PACX-1vQf_VYpWhkAIemvsL467tLbSr8mnsg4DElseYw0F0niDyLoyd578h-jFV24qWHfVVJlqDcDXT_Rhd5U/pub")
                     }) {
                         SettingsRow(icon: "hand.raised.fill", title: "Privacy Policy", color: .black)
                     }
@@ -1623,7 +1625,10 @@ struct SettingsView: View {
                     }
                     
                     Button(action: {
-                        // TODO: Contact support
+                        // Opens the Mail app with a new message to the support address.
+                        if let url = URL(string: "mailto:c705support@gmail.com?subject=C705%20Support") {
+                            UIApplication.shared.open(url)
+                        }
                     }) {
                         SettingsRow(icon: "envelope.fill", title: "Contact Support", color: .black)
                     }
