@@ -1489,9 +1489,13 @@ struct SettingsView: View {
                         authService.logout()
                         dismiss()
                     }) {
-                        SettingsRow(icon: "arrow.right.square", title: "Sign Out", color: .red)
+                        SettingsRow(icon: "arrow.right.square", title: "Sign Out", color: .black)
                     }
                     
+                }
+
+                // Deleting an account is permanent, so it sits in its own section, away from Sign Out.
+                Section(footer: Text("Deleting your account is permanent.")) {
                     Button(action: {
                         showDeleteAccount = true
                     }) {
