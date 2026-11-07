@@ -1494,15 +1494,6 @@ struct SettingsView: View {
                     
                 }
 
-                // Deleting an account is permanent, so it sits in its own section, away from Sign Out.
-                Section(footer: Text("Deleting your account is permanent.")) {
-                    Button(action: {
-                        showDeleteAccount = true
-                    }) {
-                        SettingsRow(icon: "trash", title: "Delete Account", color: .red)
-                    }
-                }
-                
                 // Private profile, who can comment or message, and blocked users.
                 // MARK: - Privacy & Safety (All Users)
                 Section(header: Text("Privacy & Safety")) {
@@ -1635,6 +1626,16 @@ struct SettingsView: View {
                         // TODO: Contact support
                     }) {
                         SettingsRow(icon: "envelope.fill", title: "Contact Support", color: .black)
+                    }
+                }
+
+                // Deleting an account is permanent, so it is the very last thing in Settings,
+                // far from Sign Out.
+                Section(footer: Text("Deleting your account is permanent.")) {
+                    Button(action: {
+                        showDeleteAccount = true
+                    }) {
+                        SettingsRow(icon: "trash", title: "Delete Account", color: .red)
                     }
                 }
             }
